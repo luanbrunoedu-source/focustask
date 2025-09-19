@@ -1,0 +1,168 @@
+<details> <summary><strong>➡️ Clique aqui para expandir o código</strong></summary><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>FocusTask</title>
+  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    #task-form {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    #task-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+    }
+    #add-button {
+      padding: 10px;
+      font-size: 1rem;
+      margin-left: 5px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .completed {
+      text-decoration: line-through;
+      color: #777;
+    }
+    button.delete {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      padding: 5px 10px;
+      background-color: #ddd;
+      border: none;
+      border-radius: 3px;
+    }
+    .dark-mode {
+      background-color: #121212;
+      color: #eee;
+    }
+    .dark-mode li {
+      border-color: #444;
+    }
+    .dark-mode button.delete {
+      background-color: #a00;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle">Modo Escuro</button>
+  <h1>FocusTask</h1>
+  <form id="task-form">
+    <input type="text" id="task-input" placeholder="Nova tarefa...">
+    <button type="submit" id="add-button">Adicionar</button>
+  </form>
+  <ul id="task-list"></ul>
+
+  <script>
+    const form = document.getElementById('task-form');
+    const input = document.getElementById('task-input');
+    const list = document.getElementById('task-list');
+    const themeToggle = document.querySelector('.theme-toggle');
+    const body = document.body;
+
+    function getTasks() {
+      const tasksJson = localStorage.getItem('tasks');
+      return tasksJson ? JSON.parse(tasksJson) : [];
+    }
+
+    function saveTasks(tasks) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+      list.innerHTML = '';
+      const tasks = getTasks();
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        if (task.completed) li.classList.add('completed');
+
+        const span = document.createElement('span');
+        span.textContent = task.text;
+        span.addEventListener('click', () => {
+          tasks[index].completed = !tasks[index].completed;
+          saveTasks(tasks);
+          renderTasks();
+        });
+
+        const btnDelete = document.createElement('button');
+        btnDelete.textContent = 'Excluir';
+        btnDelete.classList.add('delete');
+        btnDelete.addEventListener('click', () => {
+          tasks.splice(index, 1);
+          saveTasks(tasks);
+          renderTasks();
+        });
+
+        li.appendChild(span);
+        li.appendChild(btnDelete);
+        list.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      const tasks = getTasks();
+      tasks.push({ text, completed: false });
+      saveTasks(tasks);
+      input.value = '';
+      renderTasks();
+    });
+
+    function loadTheme() {
+      const tm = localStorage.getItem('theme');
+      if (tm === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.textContent = 'Modo Claro';
+      } else {
+        body.classList.remove('dark-mode');
+        themeToggle.textContent = 'Modo Escuro';
+      }
+    }
+
+    themeToggle.addEventListener('click', () => {
+      if (body.classList.contains('dark-mode')) {
+        localStorage.setItem('theme', 'light');
+      } else {
+        localStorage.setItem('theme', 'dark');
+      }
+      loadTheme();
+    });
+
+    loadTheme();
+    renderTasks();
+  </script>
+</body>
+</html>
